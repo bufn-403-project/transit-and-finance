@@ -144,7 +144,7 @@ def main():
                         f.write(json.dumps(feature, indent=2))
 
                     first_feature = False  # After the first feature, set the flag to False
-                    
+
                     # Update the processed count and check for progress
                     with lock:
                         processed_count += 1
