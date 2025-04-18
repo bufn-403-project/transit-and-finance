@@ -51,7 +51,6 @@ def log_error(message, error_log_path=ERROR_LOG_PATH):
 
 def fetch_isochrone(params):
     retries = 5
-    error_log_path = "error_file.log"
 
     for attempt in range(1, retries + 1):
         try:
