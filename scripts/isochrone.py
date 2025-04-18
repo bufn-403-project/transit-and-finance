@@ -144,11 +144,12 @@ def main():
                         f.write(json.dumps(feature, indent=2))
 
                     first_feature = False  # After the first feature, set the flag to False
-
+                    
                     # Update the processed count and check for progress
-                    processed_count += 1
-                    progress_percent = (processed_count / total_requests) * 100
-                    print(f"[{int(progress_percent)}%] {processed_count}/{total_requests} features processed")
+                    with lock:
+                        processed_count += 1
+                        progress_percent = (processed_count / total_requests) * 100
+                        print(f"[{int(progress_percent)}%] {processed_count}/{total_requests} features processed")
 
             # Close the geojson structure (closing the feature array and the whole object)
             with lock:
