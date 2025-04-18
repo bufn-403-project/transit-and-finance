@@ -10,6 +10,9 @@ import multiprocessing
 import threading
 import time
 
+# Global lock for error file access
+error_file_lock = threading.Lock()
+
 # ---- CONFIG ----
 GRAPH_HOPPER_URL = "http://localhost:8989/isochrone"
 TIME_LIMITS = [300, 900, 1800]
@@ -17,7 +20,8 @@ PROFILES = ["foot", "car", "pt"]
 POINT_LABELS = ["center", "north", "east", "south", "west"]
 NUM_WORKERS = multiprocessing.cpu_count()
 CSV_FILE = "blockgroup_centers.csv"  # Update this if needed
-OUTPUT_FILE = "isochrones.geojson"
+OUTPUT_FILE = "isochrones.geojson"   # Update this if needed
+ERROR_LOG_PATH = "error_file.log"    # Update this if needed
 
 # ---- HELPERS ----
 def build_requests_from_csv(file_path):
@@ -40,12 +44,7 @@ def build_requests_from_csv(file_path):
                     })
     return requests_list
 
-import threading
-
-# Global lock for error file access
-error_file_lock = threading.Lock()
-
-def log_error(message, error_log_path="error_file.log"):
+def log_error(message, error_log_path=ERROR_LOG_PATH):
     print(message)  # stdout
     with open(error_log_path, "a") as error_file:
         print(message, file=error_file)
@@ -84,12 +83,11 @@ def fetch_isochrone(params):
 
         except Exception as e:
             with error_file_lock:
-                with open(error_log_path, "a") as error_file:
-                    log_error(f"[!] Error on attempt {attempt} for {params}: {e}", error_log_path)
-                    if attempt < retries:
-                        log_error(f"[!] Retrying in 2 seconds... (Attempt {attempt + 1} of {retries})", error_log_path)
-                    else:
-                        log_error(f"[!] Max retries reached. Giving up.", error_log_path)
+                log_error(f"[!] Error on attempt {attempt} for {params}: {e}")
+                if attempt < retries:
+                    log_error(f"[!] Retrying in 2 seconds... (Attempt {attempt + 1} of {retries})")
+                else:
+                    log_error(f"[!] Max retries reached. Giving up.")
             if attempt < retries:
                 time.sleep(2)
             else:
