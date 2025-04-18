@@ -8,6 +8,7 @@ from pyproj import Transformer
 import os
 import multiprocessing
 import threading
+import time
 
 # ---- CONFIG ----
 GRAPH_HOPPER_URL = "http://localhost:8989/isochrone"
@@ -39,8 +40,20 @@ def build_requests_from_csv(file_path):
                     })
     return requests_list
 
+import threading
+
+# Global lock for error file access
+error_file_lock = threading.Lock()
+
+def log_error(message, error_log_path="error_file.log"):
+    print(message)  # stdout
+    with open(error_log_path, "a") as error_file:
+        print(message, file=error_file)
+
 def fetch_isochrone(params):
     retries = 5
+    error_log_path = "error_file.log"
+
     for attempt in range(1, retries + 1):
         try:
             lat, lon = params["coordinates"].split(",")
@@ -57,6 +70,7 @@ def fetch_isochrone(params):
             response = requests.get(url)
             response.raise_for_status()
 
+
             #print(f"[✓] Success: GEOID={params['geoid']} | Point={params['point_label']} | Profile={params['profile']} | Time={params['time_limit']}s")
 
             return {
@@ -67,15 +81,18 @@ def fetch_isochrone(params):
                 "coordinates": params["coordinates"],
                 "isochrone": response.json()
             }
+
         except Exception as e:
-            print(f"[!] Error on attempt {attempt} for {params}: {e}")
-            #print(f"[!] Error for GEOID={params['geoid']} | Point={params['point_label']} | Profile={params['profile']} | Time={params['time_limit']}s: {e}")
+            with error_file_lock:
+                with open(error_log_path, "a") as error_file:
+                    log_error(f"[!] Error on attempt {attempt} for {params}: {e}", error_log_path)
+                    if attempt < retries:
+                        log_error(f"[!] Retrying in 2 seconds... (Attempt {attempt + 1} of {retries})", error_log_path)
+                    else:
+                        log_error(f"[!] Max retries reached. Giving up.", error_log_path)
             if attempt < retries:
-                print(f"[!] Retrying in 2 seconds... (Attempt {attempt + 1} of {retries})")
                 time.sleep(2)
             else:
-                print(f"[!] Error on attempt {attempt} for {params}: {e}")
-                print(f"[!] Max retries reached. Giving up.")
                 return None
 
 def calculate_area(geometry):
