@@ -15,7 +15,7 @@ error_file_lock = threading.Lock()
 
 # ---- CONFIG ----
 GRAPH_HOPPER_URL = "http://localhost:8989/isochrone"
-TIME_LIMITS = [300, 900, 1800]
+TIME_LIMITS = [600, 1200, 1800]
 PROFILES = ["foot", "car", "pt"]
 POINT_LABELS = ["center", "north", "east", "south", "west"]
 NUM_WORKERS = multiprocessing.cpu_count()
