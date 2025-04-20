@@ -92,11 +92,6 @@ def fetch_isochrone(params):
             else:
                 return None
 
-def calculate_area(geometry):
-    transformer = Transformer.from_crs("EPSG:4326", "EPSG:3857", always_xy=True)
-    projected_geom = transform(transformer.transform, shape(geometry))
-    return projected_geom.area
-
 # ---- MAIN ----
 def main():
     request_data = build_requests_from_csv(CSV_FILE)
@@ -119,9 +114,8 @@ def main():
                     continue
                 for poly in result["isochrone"].get("polygons", []):
                     geometry = poly["geometry"]
-                    area = calculate_area(geometry)
 
-                    #print(f"[+] Adding polygon: GEOID={result['geoid']} | Point={result['point_label']} | Profile={result['profile']} | Time={result['time_limit']}s | Area={area:.2f} m²")
+                    #print(f"[+] Adding polygon: GEOID={result['geoid']} | Point={result['point_label']} | Profile={result['profile']} | Time={result['time_limit']}s")
 
                     feature = {
                         "type": "Feature",
@@ -131,8 +125,7 @@ def main():
                             "point_label": result["point_label"],
                             "profile": result["profile"],
                             "time_limit": result["time_limit"],
-                            "center": result["coordinates"],
-                            "area_m2": area
+                            "center": result["coordinates"]
                         }
                     }
 
