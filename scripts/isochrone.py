@@ -2,7 +2,6 @@ import pandas as pd
 import requests
 import json
 from concurrent.futures import ThreadPoolExecutor
-from shapely.geometry import shape
 import os
 import multiprocessing
 import threading
