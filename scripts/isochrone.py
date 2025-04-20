@@ -3,8 +3,6 @@ import requests
 import json
 from concurrent.futures import ThreadPoolExecutor
 from shapely.geometry import shape
-from shapely.ops import transform
-from pyproj import Transformer
 import os
 import multiprocessing
 import threading
