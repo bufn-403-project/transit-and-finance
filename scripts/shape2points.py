@@ -1,6 +1,7 @@
 import geopandas as gpd
 import pandas as pd
 import argparse
+from shapely.geometry import Point
 
 def get_centers(geometry):
     if geometry.is_empty:
@@ -9,18 +10,58 @@ def get_centers(geometry):
     centroid = geometry.centroid
     minx, miny, maxx, maxy = geometry.bounds
 
-    north = ((minx + maxx) / 2, maxy)
-    east  = (maxx, (miny + maxy) / 2)
-    south = ((minx + maxx) / 2, miny)
-    west  = (minx, (miny + maxy) / 2)
+    def find_border_point(centroid, direction):
+        # Start with a reasonable maximum distance (half the bounding box)
+        if direction in ('north', 'south'):
+            max_distance = (maxy - miny)
+        else:
+            max_distance = (maxx - minx)
+
+        low = 0
+        high = max_distance
+        tolerance = 1e-10  # how precise we want to be
+
+        while high - low > tolerance:
+            mid = (low + high) / 2
+            if direction == 'north':
+                test_point = Point(centroid.x, centroid.y + mid)
+            elif direction == 'south':
+                test_point = Point(centroid.x, centroid.y - mid)
+            elif direction == 'east':
+                test_point = Point(centroid.x + mid, centroid.y)
+            elif direction == 'west':
+                test_point = Point(centroid.x - mid, centroid.y)
+
+            if geometry.contains(test_point):
+                low = mid  # try further
+            else:
+                high = mid  # try closer
+
+        # 3/4 of the final distance
+        final_distance = (low * 3) / 4
+        if direction == 'north':
+            return Point(centroid.x, centroid.y + final_distance)
+        elif direction == 'south':
+            return Point(centroid.x, centroid.y - final_distance)
+        elif direction == 'east':
+            return Point(centroid.x + final_distance, centroid.y)
+        elif direction == 'west':
+            return Point(centroid.x - final_distance, centroid.y)
+
+    # Calculate points
+    north_point = find_border_point(centroid, 'north')
+    east_point = find_border_point(centroid, 'east')
+    south_point = find_border_point(centroid, 'south')
+    west_point = find_border_point(centroid, 'west')
 
     return [
         (centroid.y, centroid.x),
-        (north[1], north[0]),
-        (east[1], east[0]),
-        (south[1], south[0]),
-        (west[1], west[0])
+        (north_point.y, north_point.x),
+        (east_point.y, east_point.x),
+        (south_point.y, south_point.x),
+        (west_point.y, west_point.x)
     ]
+
 
 def main():
     parser = argparse.ArgumentParser(description="Extract block group centers and directional points.")
