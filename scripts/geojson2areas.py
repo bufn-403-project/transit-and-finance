@@ -59,7 +59,7 @@ def main():
         shapes_by_geoid[row["geoid"]].append(shape_dict)
 
     if args.verbose:
-        print("Done calcuating area of gemoetries.")
+        print("Done calcuating area of geometries.")
 
     if args.verbose:
         print("Calculating average areas of isochrone types by geoid")
@@ -78,7 +78,7 @@ def main():
                     rows.append([geoid, profile, time_limit, average_area])
 
     if args.verbose:
-        print("Done calculating average areas and sorting gemoetries. Writing to disk.")
+        print("Done calculating average areas and sorting geometries. Writing to disk.")
 
     columns = [
         "GEOID10",
