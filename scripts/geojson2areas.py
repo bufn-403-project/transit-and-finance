@@ -76,7 +76,7 @@ def main():
                 sum_area = sum(areas)
                 if (sum_area != 0):
                     average_area = sum_area / len(areas)
-                    rows.append([geoid, profile, time_limit, average_area)
+                    rows.append([geoid, profile, time_limit, average_area])
 
     if args.verbose:
         print("Done calculating average areas and sorting geometries. Writing to disk.")
