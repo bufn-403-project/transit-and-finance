@@ -73,9 +73,10 @@ def main():
                 for shape in shapes_by_geoid[geoid]:
                     if (shape["profile"] == profile and shape["time_limit"] == time_limit):
                         areas.append(shape["area"])
-                average_area = sum(areas)
-                if (average_area != 0):
-                    rows.append([geoid, profile, time_limit, average_area])
+                sum_area = sum(areas)
+                if (sum_area != 0):
+                    average_area = sum_area / len(areas)
+                    rows.append([geoid, profile, time_limit, sum_area / average_area)
 
     if args.verbose:
         print("Done calculating average areas and sorting geometries. Writing to disk.")
