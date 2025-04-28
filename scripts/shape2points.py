@@ -11,7 +11,7 @@ def get_centers(geometry):
     minx, miny, maxx, maxy = geometry.bounds
 
     def find_border_point(centroid, direction):
-        # Start with a reasonable maximum distance (half the bounding box)
+        # Start with a reasonable maximum distance
         if direction in ('north', 'south'):
             max_distance = (maxy - miny)
         else:
